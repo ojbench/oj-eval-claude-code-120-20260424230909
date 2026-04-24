@@ -136,10 +136,30 @@ public:
         std::vector<Task*> result;
 
         std::vector<Task*> second_tasks = second_wheel->getTasksAndAdvance();
-        result.insert(result.end(), second_tasks.begin(), second_tasks.end());
+        for (Task* task : second_tasks) {
+            result.push_back(task);
+        }
+
+        for (Task* task : second_tasks) {
+            if (task->getPeriod() > 0) {
+                TaskNode* node = new TaskNode();
+                node->task = task;
+                scheduleNode(node, task->getPeriod());
+            }
+        }
 
         std::vector<Task*> cascaded = cascadeTasks();
-        result.insert(result.end(), cascaded.begin(), cascaded.end());
+        for (Task* task : cascaded) {
+            result.push_back(task);
+        }
+
+        for (Task* task : cascaded) {
+            if (task->getPeriod() > 0) {
+                TaskNode* node = new TaskNode();
+                node->task = task;
+                scheduleNode(node, task->getPeriod());
+            }
+        }
 
         return result;
     }
@@ -164,21 +184,11 @@ private:
 
         if (second_wheel->current_slot == 0) {
             std::vector<Task*> minute_tasks = minute_wheel->getTasksAndAdvance();
-            for (Task* task : minute_tasks) {
-                TaskNode* node = new TaskNode();
-                node->task = task;
-                scheduleNode(node, task->getPeriod() > 0 ? task->getPeriod() : 0);
-            }
             result.insert(result.end(), minute_tasks.begin(), minute_tasks.end());
         }
 
         if (minute_wheel->current_slot == 0) {
             std::vector<Task*> hour_tasks = hour_wheel->getTasksAndAdvance();
-            for (Task* task : hour_tasks) {
-                TaskNode* node = new TaskNode();
-                node->task = task;
-                scheduleNode(node, task->getPeriod() > 0 ? task->getPeriod() : 0);
-            }
             result.insert(result.end(), hour_tasks.begin(), hour_tasks.end());
         }
 
